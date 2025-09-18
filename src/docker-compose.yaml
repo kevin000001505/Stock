@@ -9,4 +9,4 @@ services:
     restart: unless-stopped
     volumes:
       - .:/app
-      - ../data:/app/data
+      - ./data:/app/data

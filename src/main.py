@@ -123,7 +123,9 @@ with st.spinner("Analyzing all stocks for positive trends..."):
 
     for index, row in df.iterrows():
         # Get the price data columns (excluding non-numeric columns)
-        price_columns = [col for col in df.columns if col not in ["代號", "名稱"]]
+        price_columns = [
+            col for col in df.columns if col not in ["代號", "名稱", "產業別"]
+        ]
 
         # Extract RAW price data for the stock
         price_data = row[price_columns].values
@@ -179,17 +181,17 @@ with st.spinner("Analyzing all stocks for positive trends..."):
     if filtered_stocks:
         # Build the display dataframe with transformed data
         display_data = []
-        base_columns = ["代號", "名稱"]
+        base_columns = ["代號", "名稱", "產業別"]
 
         # Calculate how many columns we need for display
         original_price_columns = [
-            col for col in df.columns if col not in ["代號", "名稱"]
+            col for col in df.columns if col not in ["代號", "名稱", "產業別"]
         ]
 
         for idx in filtered_stocks:
             row = df.iloc[idx]
             # Get basic info
-            stock_info = [row["代號"], row["名稱"]]
+            stock_info = [row["代號"], row["名稱"], row["產業別"]]
 
             # Get raw price data
             raw_prices = row[original_price_columns].values
