@@ -1,0 +1,12 @@
+services:
+  stock-app:
+    container_name: stock-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - ../data:/app/data
