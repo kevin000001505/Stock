@@ -9,5 +9,7 @@ wheels/
 # Virtual environments
 .venv
 *.ipynb
-*.csv
 src/StockCounter.csv
+.DS_Store
+*.zip
+
