@@ -1,11 +1,11 @@
 services:
   stock-app:
-    container_name: stock-app
+    container_name: stock-app-latest
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8501:8501"
+      - "8502:8501"
     restart: unless-stopped
     volumes:
       - .:/app

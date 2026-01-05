@@ -1,9 +1,10 @@
-import config as config
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from pyquery import PyQuery as pq
 import config
+import time
+from typing import Optional, Callable
 
 
 class StockDataFetcher:
@@ -15,13 +16,19 @@ class StockDataFetcher:
         self.session.cookies.update(config.COOKIES)
         self.session.headers.update(config.HEADERS)
 
-    def fetch_stock_data(self, df: pd.DataFrame, market_type: str) -> pd.DataFrame:
+    def fetch_stock_data(
+        self,
+        df: pd.DataFrame,
+        market_type: str,
+        progress_callback: Optional[Callable[[str, int, int, float], None]] = None,
+    ) -> pd.DataFrame:
         """
         Fetch stock data for the specified market type.
 
         Parameters:
         - df: DataFrame with existing stock data
         - market_type: "listed" for 上市 or "counter" for 上櫃
+        - progress_callback: Optional callback function(message, current, total, elapsed_time)
 
         Returns:
         - Updated DataFrame with new data
@@ -49,18 +56,53 @@ class StockDataFetcher:
         attr_name = config_data["attr_name"]
 
         latest_date = df.columns[-1]
-        dates_list = self.generate_dates(f"{datetime.now().year}/{latest_date}")
+        dates_list = self.generate_dates(latest_date)
+        total_dates = len(dates_list)
+        print(f"Fetching data for dates: {dates_list}")
 
-        for date in dates_list:
+        processing_times = []  # Track actual processing times
+
+        for idx, date in enumerate(dates_list, 1):
+            date_start_time = time.time()
+
+            # Calculate progress and estimated time with actual measurements
+            if processing_times:
+                # Use actual average from completed dates
+                avg_time_per_date = sum(processing_times) / len(processing_times)
+            else:
+                # Initial estimate: 10 seconds per date
+                avg_time_per_date = 10.0
+
+            remaining_dates = total_dates - idx
+            estimated_remaining = avg_time_per_date * remaining_dates
+
+            # Call progress callback if provided
+            if progress_callback:
+                progress_callback(
+                    f"處理日期 {date}",
+                    idx,
+                    total_dates,
+                    estimated_remaining,
+                )
+
             params["RPT_TIME"] = date
             response = self.session.post(config.URL, params=params)
+            response.encoding = "utf-8"
             doc = pq(response.text)
             stock_date = (
                 doc("table#tblStockList tr#row0 > td:nth-child(4)").text().strip()
             )
+
+            date_elapsed = time.time() - date_start_time
+            processing_times.append(date_elapsed)  # Record actual processing time
+
+            print(
+                f"Fetched data for date: {date}, stock date in data: {stock_date} (took {date_elapsed:.2f}s)"
+            )
             if stock_date == "":
+                print("No data for this date, skipping...")
                 continue  # Skip if no data for this date
-            elif f"{datetime.now().year}/{stock_date}" != date:
+            elif stock_date != date.split("/")[1] + "/" + date.split("/")[2]:
                 raise ValueError(
                     f"Date mismatch: expected {date}, got {datetime.now().year}/{stock_date}"
                 )
@@ -70,7 +112,7 @@ class StockDataFetcher:
                 code = item.find("th:nth-child(1) > nobr > a").text().strip()
                 price = item.find("td:nth-child(6) > nobr > a").text()
                 if code and price:
-                    data_list.append({"代號": code, stock_date: price})
+                    data_list.append({"代號": code, date: price})
 
             today_df = pd.DataFrame(data_list)
             df = df.merge(today_df, on="代號", how="left")
@@ -92,7 +134,10 @@ class StockDataFetcher:
         Returns:
             list[str]: List of dates in 'YYYY/MM/DD' format.
         """
-        start_date = datetime.strptime(start_date_str, "%Y/%m/%d")
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y/%m/%d")
+        except ValueError:
+            start_date = datetime.strptime(f"2025/{start_date_str}", "%Y/%m/%d")
         today = datetime.today()
 
         # Start from the next day
@@ -209,5 +254,7 @@ class StockDataFetcher:
 
 if __name__ == "__main__":
     stock_data_fetcher = StockDataFetcher()
-    stock_data_fetcher.fetch_today_listed_data()
-    stock_data_fetcher.fetch_today_counter_data()
+    response = stock_data_fetcher.fetch_stock_data(
+        stock_data_fetcher.listed_data, "listed"
+    )
+    print(response.columns)

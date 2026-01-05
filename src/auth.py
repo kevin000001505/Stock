@@ -299,7 +299,6 @@ def check_authentication():
 
 def show_logout_button():
     """Show logout button in sidebar"""
-    st.sidebar.markdown("---")
     st.sidebar.markdown(
         f"**👤 目前登入使用者：** {st.session_state.get('username', '未知')}"
     )

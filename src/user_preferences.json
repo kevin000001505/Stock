@@ -1,0 +1,51 @@
+{
+  "kevin": {
+    "stock_type": "上市",
+    "num_extrema": 2,
+    "extrema_display": "底谷",
+    "reverse_display": "做多",
+    "window_size": 1,
+    "display_days": 20,
+    "observed_codes": [
+      "6719",
+      "2382",
+      "2324",
+      "1471",
+      "3450",
+      "6108",
+      "6141"
+    ],
+    "selected_categories": {
+      "上市": [
+        "電腦及週邊設備業",
+        "電機機械",
+        "電子零組件業",
+        "電子通路業",
+        "資訊服務業",
+        "其他電子業",
+        "半導體業",
+        "光電業",
+        "化學工業",
+        "數位雲端"
+      ]
+    }
+  },
+  "toast": {
+    "stock_type": "上市",
+    "num_extrema": 2,
+    "extrema_display": "底谷",
+    "reverse_display": "做多",
+    "window_size": 1,
+    "display_days": 20,
+    "observed_codes": [
+      "0050"
+    ],
+    "selected_categories": {
+      "上市": [
+        "銀行業",
+        "債券ETF",
+        "保險業"
+      ]
+    }
+  }
+}

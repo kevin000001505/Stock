@@ -5,6 +5,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY data/ ./data/
+
 # The first . mean the host machine -> The flder where the Dockerfile is located
 # The second . means the container -> Here it mean /app because WORKDIR /app was set eariler
 COPY . .
